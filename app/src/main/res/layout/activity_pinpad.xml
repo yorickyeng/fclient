@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".PinpadActivity">
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Введите ПИН-код"
+        android:textAlignment="center"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/txtPin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAlignment="center"
+        android:textSize="28sp" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="24dp"/>
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="140dp"
+        android:columnCount="3"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnKey1"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="1" />
+
+        <Button
+            android:id="@+id/btnKey2"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="2" />
+
+        <Button
+            android:id="@+id/btnKey3"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="3" />
+
+        <Button
+            android:id="@+id/btnKey4"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="4" />
+
+        <Button
+            android:id="@+id/btnKey5"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="5" />
+
+        <Button
+            android:id="@+id/btnKey6"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="6" />
+
+        <Button
+            android:id="@+id/btnKey7"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="7" />
+
+        <Button
+            android:id="@+id/btnKey8"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="8" />
+
+        <Button
+            android:id="@+id/btnKey9"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="9" />
+
+        <Button
+            android:id="@+id/btnReset"
+            style="@style/PadButton"
+            android:text="C" />
+
+        <Button
+            android:id="@+id/btnKey0"
+            style="@style/PadButton"
+            android:onClick="keyClick"
+            android:text="0" />
+
+        <Button
+            android:id="@+id/btnOK"
+            style="@style/PadButton"
+            android:text="OK" />
+    </GridLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+</LinearLayout>

@@ -22,7 +22,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_ru_iu3_fclient_MainActivity_stringFromJNI(JNIEnv *env, jobject /* thiz */) {
     spdlog::set_pattern("%v");
 
-    std::string hello = "Hello from C++";
+    std::string hello = "Yay! Text from native code!";
 
     LOG_INFO("Hello from logcat c++ %d", 2022);
     SLOG_INFO("Hello from spdlog {0}", 1967);
@@ -40,6 +40,12 @@ Java_ru_iu3_fclient_MainActivity_initRng(JNIEnv *env, jclass /* clazz */) {
                                  &entropy,
                                  (const unsigned char *) personalization,
                                  strlen(personalization));
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ru_iu3_fclient_MainActivity_freeRng(JNIEnv *env, jclass) {
+    mbedtls_ctr_drbg_free(&ctr_drbg);
+    mbedtls_entropy_free(&entropy);
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
