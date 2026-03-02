@@ -1,16 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="24dp"
+    tools:context=".presentation.MainActivity">
 
-    <Button
-        android:id="@+id/sample_button"
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/txtAppTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
+        android:gravity="center"
+        android:letterSpacing="0.02"
+        android:text="welcome to fclient"
+        android:textSize="32sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/imgLogo"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_marginBottom="28dp"
+        android:contentDescription="@null"
+        android:src="@mipmap/ic_launcher" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5" />
+
+    <Button
+        android:id="@+id/pinpad_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:onClick="onButtonClick"
-        android:text="Click Me" />
-</FrameLayout>
+        android:text="Open Pinpad" />
+
+    <Button
+        android:id="@+id/encrypt_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:onClick="onButtonClick"
+        android:text="3DES Encryption" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

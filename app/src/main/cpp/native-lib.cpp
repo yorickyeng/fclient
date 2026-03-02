@@ -1,37 +1,95 @@
 #include <jni.h>
+
+#include <algorithm>
+#include <chrono>
+#include <condition_variable>
+#include <cstdint>
+#include <cstring>
+#include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 
-#include <android/log.h>
-
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/android_sink.h>
+#include <spdlog/spdlog.h>
 
-#include <mbedtls/entropy.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/des.h>
+#include <mbedtls/entropy.h>
 
-#define LOG_INFO(...) __android_log_print(ANDROID_LOG_INFO, "fclient_ndk", __VA_ARGS__)
-#define SLOG_INFO(...) android_logger->info( __VA_ARGS__ )
-auto android_logger = spdlog::android_logger_mt("android", "fclient_ndk");
+namespace {
+    // jvm
+    JavaVM *gJvm = nullptr;
 
-mbedtls_entropy_context entropy;
-mbedtls_ctr_drbg_context ctr_drbg;
-const char *personalization = "fclient-sample-app";
+    // mbedtls rng
+    mbedtls_entropy_context entropy;
+    mbedtls_ctr_drbg_context ctr_drbg;
+    const char *personalization = "fclient-sample-app";
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_ru_iu3_fclient_MainActivity_stringFromJNI(JNIEnv *env, jobject /* thiz */) {
-    spdlog::set_pattern("%v");
+    // pin state
+    std::mutex pinMutex;
+    std::condition_variable pinCv;
+    std::string receivedPin;
+    bool pinReady = false;
 
-    std::string hello = "Yay! Text from native code!";
+    // block state
+    std::chrono::steady_clock::time_point blockedUntil;
+    bool isBlocked = false;
 
-    LOG_INFO("Hello from logcat c++ %d", 2022);
-    SLOG_INFO("Hello from spdlog {0}", 1967);
+    // env
+    void releaseEnv(bool detach) { if (detach) gJvm->DetachCurrentThread(); }
 
-    return env->NewStringUTF(hello.c_str());
+    JNIEnv* getEnv(bool& detach) {
+        JNIEnv* env = nullptr;
+        detach = false;
+
+        int status = gJvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+
+        if (status == JNI_EDETACHED) {
+            if (gJvm->AttachCurrentThread(&env, nullptr) != 0)
+                return nullptr;
+            detach = true;
+        }
+
+        return env;
+    }
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
+    gJvm = vm;
+    return JNI_VERSION_1_6;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ru_iu3_fclient_presentation_MainActivity_spdlog(JNIEnv *env, jclass, jstring jtag, jstring jmessage) {
+
+    if (jmessage == nullptr) return;
+
+    const char *msg = env->GetStringUTFChars(jmessage, nullptr);
+    if (msg == nullptr) return;
+
+    const char *tagChars = nullptr;
+    if (jtag != nullptr) {
+        tagChars = env->GetStringUTFChars(jtag, nullptr);
+        if (tagChars == nullptr) { // OOM
+            env->ReleaseStringUTFChars(jmessage, msg);
+            return;
+        }
+    }
+    const char *tag = (tagChars != nullptr) ? tagChars : "fclient_ndk";
+
+    auto sink = std::make_shared<spdlog::sinks::android_sink_mt>(tag);
+    spdlog::logger logger("tmp", sink);
+    logger.set_pattern("%v");
+    logger.info("{}", msg);
+
+    env->ReleaseStringUTFChars(jmessage, msg);
+    if (tagChars != nullptr) env->ReleaseStringUTFChars(jtag, tagChars);
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_ru_iu3_fclient_MainActivity_initRng(JNIEnv *env, jclass /* clazz */) {
+Java_ru_iu3_fclient_presentation_MainActivity_initRng(JNIEnv *env, jclass /* clazz */) {
+
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
 
@@ -43,13 +101,15 @@ Java_ru_iu3_fclient_MainActivity_initRng(JNIEnv *env, jclass /* clazz */) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_ru_iu3_fclient_MainActivity_freeRng(JNIEnv *env, jclass) {
+Java_ru_iu3_fclient_presentation_MainActivity_freeRng(JNIEnv *env, jclass) {
+
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_ru_iu3_fclient_MainActivity_randomBytes(JNIEnv *env, jclass, jint len) {
+Java_ru_iu3_fclient_presentation_MainActivity_randomBytes(JNIEnv *env, jclass, jint len) {
+
     auto *nativeBytes = new uint8_t[len];
     mbedtls_ctr_drbg_random(&ctr_drbg, nativeBytes, len);
 
@@ -61,7 +121,8 @@ Java_ru_iu3_fclient_MainActivity_randomBytes(JNIEnv *env, jclass, jint len) {
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_ru_iu3_fclient_MainActivity_encrypt(JNIEnv *env, jclass, jbyteArray key, jbyteArray data) {
+Java_ru_iu3_fclient_presentation_MainActivity_encrypt(JNIEnv *env, jclass, jbyteArray key, jbyteArray data) {
+
     jsize keyLen = env->GetArrayLength(key);
     jsize dataLen = env->GetArrayLength(data);
     if ((keyLen != 16) || (dataLen <= 0)) return env->NewByteArray(0);
@@ -98,7 +159,8 @@ Java_ru_iu3_fclient_MainActivity_encrypt(JNIEnv *env, jclass, jbyteArray key, jb
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_ru_iu3_fclient_MainActivity_decrypt(JNIEnv *env, jclass, jbyteArray key, jbyteArray data) {
+Java_ru_iu3_fclient_presentation_MainActivity_decrypt(JNIEnv *env, jclass, jbyteArray key, jbyteArray data) {
+
     jsize keyLen = env->GetArrayLength(key);
     jsize dataLen = env->GetArrayLength(data);
     if ((keyLen != 16) || (dataLen <= 0) || ((dataLen % 8) != 0)) return env->NewByteArray(0);
@@ -130,4 +192,122 @@ Java_ru_iu3_fclient_MainActivity_decrypt(JNIEnv *env, jclass, jbyteArray key, jb
     mbedtls_des3_free(&ctx);
     
     return javaBytes;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ru_iu3_fclient_presentation_MainActivity_providePin(JNIEnv *env, jobject, jstring jpin) {
+
+    if (!jpin) return;
+    const char* utf = env->GetStringUTFChars(jpin, nullptr);
+    if (!utf) return;
+
+    {
+        std::lock_guard<std::mutex> lock(pinMutex);
+        receivedPin = utf;
+        pinReady = true;
+    }
+
+    env->ReleaseStringUTFChars(jpin, utf);
+    pinCv.notify_one();
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_ru_iu3_fclient_presentation_MainActivity_transaction(JNIEnv *env, jobject thiz, jbyteArray trd) {
+
+    jobject gThiz = env->NewGlobalRef(thiz);
+    auto gTrd = (jbyteArray) env->NewGlobalRef(trd);
+
+    std::thread([gThiz, gTrd]() {
+
+        bool detach = false;
+        JNIEnv *env = getEnv(detach);
+        if (!env) return;
+
+        jclass cls = env->GetObjectClass(gThiz);
+
+        jmethodID enterPinId =
+                env->GetMethodID(cls,
+                                 "enterPin",
+                                 "(ILjava/lang/String;)V");
+
+        jmethodID resultId =
+                env->GetMethodID(cls,
+                                 "transactionResult",
+                                 "(Z)V");
+
+        // ----- parse TRD -----
+
+        jsize sz = env->GetArrayLength(gTrd);
+        jbyte *p = env->GetByteArrayElements(gTrd, nullptr);
+
+        if (sz != 9) {
+            env->CallVoidMethod(gThiz, resultId, false);
+        } else {
+
+            char buf[13];
+            for (int i = 0; i < 6; i++) {
+                uint8_t n = *(p + 3 + i);
+                buf[i * 2] = ((n & 0xF0) >> 4) + '0';
+                buf[i * 2 + 1] = (n & 0x0F) + '0';
+            }
+            buf[12] = 0;
+
+            jstring jamount = env->NewStringUTF(buf);
+
+            int attempts = 3;
+            bool ok = false;
+
+            auto now = std::chrono::steady_clock::now();
+
+            {
+                std::lock_guard<std::mutex> lock(pinMutex);
+                if (isBlocked && now < blockedUntil) {
+                    env->CallVoidMethod(gThiz, resultId, false);
+                    goto cleanup;
+                }
+                isBlocked = false;
+            }
+
+            while (attempts > 0) {
+
+                {
+                    std::lock_guard<std::mutex> lock(pinMutex);
+                    pinReady = false;
+                }
+
+                env->CallVoidMethod(gThiz, enterPinId, attempts, jamount);
+
+                std::unique_lock<std::mutex> lock(pinMutex);
+                pinCv.wait(lock, [] { return pinReady; });
+
+                if (receivedPin == "1234") {
+                    ok = true;
+                    break;
+                }
+
+                attempts--;
+            }
+
+            if (!ok) {
+                std::lock_guard<std::mutex> lock(pinMutex);
+                isBlocked = true;
+                blockedUntil = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+            }
+
+            env->CallVoidMethod(gThiz, resultId, ok);
+
+            cleanup:
+
+            env->DeleteLocalRef(jamount);
+        }
+
+        env->ReleaseByteArrayElements(gTrd, p, JNI_ABORT);
+        env->DeleteLocalRef(cls);
+        env->DeleteGlobalRef(gThiz);
+        env->DeleteGlobalRef(gTrd);
+
+        releaseEnv(detach);
+    }).detach();
+
+    return true;
 }

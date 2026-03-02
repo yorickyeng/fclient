@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">fclient</string>
+    <string name="decimal_format">#,###,###,##0.00</string>
+    <string name="amount_unknown">Неизвестная сумма</string>
+    <string name="pinpad_title">Введите пин-код</string>
+    <string name="pinpad_two_attempts_left">"Осталось две попытки"</string>
+    <string name="pinpad_one_attempt_left">"Осталась одна попытка"</string>
+    <string name="pinpad_attempts">Осталось попыток: %d</string>
+    <string name="pinpad_ok">ОК</string>
+    <string name="pinpad_transaction_sum">Сумма транзакции</string>
 </resources>

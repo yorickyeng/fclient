@@ -1,36 +1,113 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".PinpadActivity">
+    android:paddingHorizontal="24dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    tools:context=".presentation.PinpadActivity">
 
     <Space
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeColor="?attr/colorOutline"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/txtAmountLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pinpad_transaction_sum"
+                android:textAlignment="center"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/txtAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="1 000 ₽"
+                android:textAlignment="center"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="?attr/colorOnSurface" />
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/txtTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Введите ПИН-код"
+        android:text="@string/pinpad_title"
         android:textAlignment="center"
-        android:textSize="20sp" />
+        android:textAppearance="?attr/textAppearanceTitleLarge"
+        android:textColor="?attr/colorOnSurface" />
 
     <TextView
-        android:id="@+id/txtPin"
+        android:id="@+id/txtAttempts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=""
+        android:layout_marginTop="4dp"
+        android:text="@string/pinpad_attempts"
         android:textAlignment="center"
-        android:textSize="28sp" />
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pinLayout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintEnabled="false">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txtPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:gravity="center"
+            android:importantForAutofill="no"
+            android:inputType="numberPassword"
+            android:letterSpacing="0.25"
+            android:longClickable="false"
+            android:text=""
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:textIsSelectable="false" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="24dp"/>
+        android:layout_height="24dp" />
 
     <GridLayout
         android:layout_width="wrap_content"
@@ -43,55 +120,55 @@
         <Button
             android:id="@+id/btnKey1"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="1" />
 
         <Button
             android:id="@+id/btnKey2"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="2" />
 
         <Button
             android:id="@+id/btnKey3"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="3" />
 
         <Button
             android:id="@+id/btnKey4"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="4" />
 
         <Button
             android:id="@+id/btnKey5"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="5" />
 
         <Button
             android:id="@+id/btnKey6"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="6" />
 
         <Button
             android:id="@+id/btnKey7"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="7" />
 
         <Button
             android:id="@+id/btnKey8"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="8" />
 
         <Button
             android:id="@+id/btnKey9"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="9" />
 
         <Button
@@ -102,17 +179,17 @@
         <Button
             android:id="@+id/btnKey0"
             style="@style/PadButton"
-            android:onClick="keyClick"
+            android:onClick="onKeyClick"
             android:text="0" />
 
         <Button
             android:id="@+id/btnOK"
             style="@style/PadButton"
-            android:text="OK" />
+            android:text="@string/pinpad_ok" />
     </GridLayout>
 
     <Space
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 </LinearLayout>
